@@ -1,0 +1,1345 @@
+
+
+
+代理
+export http_proxy=http://192.168.1.8:7890
+export https_proxy=http://192.168.1.8:7890
+
+初始化项，生成pyproject.toml
+uv init
+
+添加依赖
+uv add django
+
+
+
+
+
+```
+uv add django
+error: No `pyproject.toml` found in current directory or any parent directory
+这个错误表明你正在尝试使用 uv 这个工具来安装 Django，但 uv 找不到 pyproject.toml 文件。
+
+uv 是一个快速的 Python 包安装和解析工具，它默认在项目模式（project mode）下运行，这意味着它期望你在管理一个 Python 项目，并且该项目的根目录下应该有一个 pyproject.toml（或 requirements.txt、setup.py 等）文件来定义依赖关系。
+
+解决方案
+你可以根据你的实际需求选择以下一种方法：
+
+方法一：初始化一个新的 Python 项目（推荐用于新项目）
+如果你打算创建一个新的 Django 项目，首先需要初始化一个项目：
+
+bash
+编辑
+# 初始化一个新的项目，生成 pyproject.toml
+uv init
+
+# 然后添加 django 作为依赖
+uv add django
+之后你可以用 django-admin startproject myproject . 来创建 Django 项目结构。
+
+方法二：使用 --python 指定环境并创建项目
+更常见的做法是先确保有合适的 Python 环境：
+
+bash
+编辑
+# 创建一个虚拟环境（可选，但推荐）
+uv venv .venv
+source .venv/bin/activate  # Linux/macOS
+# 或
+.venv\Scripts\activate     # Windows
+
+# 添加 django 到当前环境（即使没有 pyproject.toml）
+uv pip install django
+注意：这里使用的是 uv pip install 而不是 uv add。uv pip install 的行为类似于 pip install，可以直接安装包而不需要 pyproject.toml。
+
+方法三：在已有项目中使用 uv add
+如果你已经有一个项目，确保你在项目的根目录下执行命令，且该目录包含 pyproject.toml。如果没有，可以手动创建或使用 uv init 生成。
+
+总结
+uv add 需要 pyproject.toml 文件，因为它用于管理项目的依赖。
+如果你只是想快速安装 Django，使用 uv pip install django 更直接。
+如果你要开始一个新项目，先运行 uv init 创建项目结构。
+✅ 推荐流程：
+
+bash
+编辑
+uv venv .venv
+source .venv/bin/activate
+uv pip install django
+django-admin startproject mysite .
+python mysite/manage.py runserver
+代码
+如何在已有项目中添加依赖包？
+为什么 pyproject.toml 对 uv 重要？
+如何创建一个简单的 Python 项目？
+
+
+
+
+
+
+如何在已有项目中添加依赖包？
+为什么 pyproject.toml 对 uv 重要？
+如何创建一个简单的 Python 项目？
+以下是针对你提出的三个问题的详细解答：
+
+1. 如何在已有项目中添加依赖包？
+如果你已经有一个 Python 项目，并想用 uv 来管理依赖，可以按照以下步骤操作：
+
+✅ 前提条件
+确保你的项目根目录下有 pyproject.toml 文件。如果没有，请先创建（见第3问）。
+
+✅ 添加依赖包（如 Django、requests 等）
+bash
+编辑
+# 安装并添加到 pyproject.toml 的 dependencies 中
+uv add django
+
+# 添加开发依赖（例如测试、格式化工具）
+uv add pytest --dev
+
+# 一次性添加多个包
+uv add requests black --dev
+这会自动修改 pyproject.toml，并将依赖写入 [project.dependencies] 或 [project.optional-dependencies]。
+
+✅ 安装项目所有依赖（从 pyproject.toml）
+bash
+编辑
+uv install
+这类似于 pip install -r requirements.txt，但更现代、更快。
+
+✅ 同步环境（确保虚拟环境与 pyproject.toml 一致）
+bash
+编辑
+uv sync
+这个命令会根据 pyproject.toml 安装缺失的包，并移除多余的包（保持环境干净）。
+
+2. 为什么 pyproject.toml 对 uv 重要？
+pyproject.toml 是现代 Python 项目的核心配置文件，对 uv 至关重要，原因如下：
+
+作用	说明
+📦 依赖声明	uv 通过 pyproject.toml 中的 [project.dependencies] 知道你的项目需要哪些包（如 Django、Flask）。
+🔄 可重复构建	任何人拿到你的项目，只需运行 uv install 就能还原完全相同的依赖环境。
+⚙️ 项目元数据	包含项目名称、版本、作者、入口脚本等信息，便于打包和发布。
+🔧 工具集成	支持 pytest, black, mypy 等工具的配置，实现一体化开发体验。
+🚀 高性能解析	uv 利用 pyproject.toml 快速解析依赖关系，比传统 pip 更快更准确。
+📌 简单说：
+
+pyproject.toml 是 uv 的“项目说明书”。没有它，uv 不知道你在管理什么项目，因此会报错：No pyproject.toml found。
+
+3. 如何创建一个简单的 Python 项目？
+使用 uv 可以非常快速地创建一个标准的 Python 项目：
+
+✅ 步骤 1：创建项目目录并进入
+bash
+编辑
+mkdir my-python-project
+cd my-python-project
+✅ 步骤 2：初始化项目（生成 pyproject.toml）
+bash
+编辑
+uv init
+它会提示你输入项目名、版本、作者等信息，然后生成 pyproject.toml。
+
+你也可以非交互式创建：
+
+bash
+编辑
+uv init --name myproject --author "Your Name"
+✅ 步骤 3：创建虚拟环境（推荐）
+bash
+编辑
+uv venv .venv
+source .venv/bin/activate  # Linux/macOS
+# 或
+.venv\Scripts\activate     # Windows
+✅ 步骤 4：添加你需要的依赖
+bash
+编辑
+uv add requests numpy    # 主要依赖
+uv add pytest --dev      # 开发依赖
+✅ 步骤 5：创建你的代码文件
+bash
+编辑
+mkdir src
+touch src/main.py
+src/main.py 示例内容：
+
+python
+编辑
+import requests
+
+def fetch_data():
+    response = requests.get("https://httpbin.org/json")
+    print(response.json())
+
+if __name__ == "__main__":
+    fetch_data()
+✅ 步骤 6：运行项目
+bash
+编辑
+python src/main.py
+✅ （可选）打包项目
+bash
+编辑
+uv build
+生成 dist/ 目录下的 .whl 和 .tar.gz 文件，可用于发布。
+
+✅ 总结
+任务	命令
+初始化项目	uv init
+添加依赖	uv add package_name
+安装所有依赖	uv install
+创建虚拟环境	uv venv .venv
+运行代码	python your_script.py
+💡 使用 uv + pyproject.toml 是现代 Python 开发的最佳实践，让你的项目更规范、可维护、可共享。
+
+代码
+如何更新已有的 pyproject.toml 文件？
+uv 安装依赖时有哪些注意事项？
+如何查看项目中的依赖冲突问题？
+
+
+
+
+
+如何更新已有的 pyproject.toml 文件？
+uv 安装依赖时有哪些注意事项？
+如何查看项目中的依赖冲突问题？
+以下是针对你提出的三个问题的详细解答：
+
+1. 如何更新已有的 pyproject.toml 文件？
+pyproject.toml 是一个文本配置文件，可以通过多种方式更新。
+
+✅ 方法一：使用 uv add / uv remove（推荐）
+这是最安全、最推荐的方式，uv 会自动处理格式和依赖版本。
+
+bash
+编辑
+# 添加新依赖
+uv add requests flask
+
+# 添加开发依赖
+uv add pytest black --dev
+
+# 移除依赖
+uv remove flask
+✅ 优点：自动更新 pyproject.toml，并确保语法正确。
+
+✅ 方法二：手动编辑 pyproject.toml
+你可以直接用文本编辑器或命令行工具修改文件。
+
+示例 pyproject.toml 片段：
+
+toml
+编辑
+[project]
+name = "myapp"
+version = "0.1.0"
+dependencies = [
+  "requests>=2.25.0",
+  "django==4.2.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "black",
+  "flake8"
+]
+📌 手动修改注意事项：
+
+使用正确的 TOML 语法（如字符串用双引号，列表用 []）。
+版本约束建议使用：
+django>=4.0：至少 4.0
+django==4.2.0：精确版本
+django~=4.2.0：兼容版本（等价于 >=4.2.0, <4.3.0）
+✅ 方法三：使用 uv add --editable 安装本地包
+如果你想把一个本地模块作为依赖加入项目：
+
+bash
+编辑
+uv add -e ./mypackage
+这会在 pyproject.toml 中添加一条可编辑安装的路径依赖。
+
+2. uv 安装依赖时有哪些注意事项？
+虽然 uv 比 pip 更快更强大，但仍需注意以下几点：
+
+注意事项	说明与建议
+🔹 确保在项目根目录运行	uv add 要求当前目录或父目录存在 pyproject.toml，否则报错。
+🔹 使用虚拟环境	建议先创建隔离环境，避免污染全局 Python：
+bash
+编辑
+uv venv .venv
+source .venv/bin/activate
+``` |
+| 🔹 **区分 `uv add` 和 `uv pip install`** |  
+- `uv add`：修改 `pyproject.toml`，用于项目依赖管理。  
+- `uv pip install`：仅安装包，不记录到项目文件（适合临时调试）。 |
+| 🔹 **版本冲突预防** | 使用精确版本或合理范围，避免 `*` 通配符。`uv` 会自动解析依赖，但不合理的约束可能导致失败。 |
+| 🔹 **平台兼容性** | `uv` 支持预编译 wheel，但在某些平台（如 ARM、旧系统）可能需要回退到源码构建。 |
+| 🔹 **锁定文件（可选）** | `uv` 默认不生成 `uv.lock`，但你可以通过 `uv lock` 生成锁定文件以确保可重复构建。 |
+| 🔹 **离线模式支持** | 使用 `--offline` 可离线安装（需提前缓存包）。 |
+
+📌 **最佳实践**：
+```bash
+# 推荐流程
+uv venv .venv
+source .venv/bin/activate
+uv add django requests  # 记录到 pyproject.toml
+uv sync                 # 确保环境一致
+3. 如何查看项目中的依赖冲突问题？
+依赖冲突是指两个包依赖了同一个包的不同版本，导致无法同时满足。
+
+✅ 方法一：uv 自动检测（最简单）
+当你运行以下命令时，uv 会自动解析依赖并报告冲突：
+
+bash
+编辑
+uv add django requests
+# 或
+uv install
+如果存在冲突，你会看到类似输出：
+
+text
+编辑
+error: Failed to resolve dependencies:
+  Because package-a depends on django==4.0 and package-b depends on django>=5.0, we cannot proceed.
+✅ 方法二：使用 uv pip check 检查已安装包的冲突
+bash
+编辑
+uv pip check
+输出示例：
+
+text
+编辑
+requests 2.25.1 requires idna<3,>=2.5, but you have idna 3.1 which is incompatible.
+这能发现已安装包之间的不兼容问题。
+
+✅ 方法三：使用 uv lock --dry-run 模拟解析
+bash
+编辑
+uv lock --dry-run
+这会尝试生成依赖锁文件，但不保存，可用于测试依赖是否能成功解析。
+
+✅ 方法四：手动分析依赖树（高级）
+虽然 uv 目前没有内置 tree 命令，但你可以使用 pip 查看：
+
+bash
+编辑
+uv pip install pipdeptree
+pipdeptree
+这会显示完整的依赖树，帮助你定位冲突来源。
+
+✅ 总结
+问题	解决方案
+更新 pyproject.toml	使用 uv add/remove 或手动编辑
+uv 安装注意事项	使用虚拟环境、区分 add 与 pip install、避免通配符
+查看依赖冲突	uv install 自动报错、uv pip check、uv lock --dry-run、pipdeptree
+💡 建议工作流：
+
+bash
+编辑
+uv venv .venv
+source .venv/bin/activate
+uv add django requests pytest --dev
+uv pip check  # 检查冲突
+uv sync       # 同步环境
+这样可以确保你的项目依赖清晰、可维护、无冲突。
+
+代码
+如何避免依赖冲突问题？
+有哪些工具可以检测依赖冲突？
+如何在项目中管理多个虚拟环境？
+
+
+
+
+
+
+
+
+如何避免依赖冲突问题？
+有哪些工具可以检测依赖冲突？
+如何在项目中管理多个虚拟环境？
+以下是针对你提出的三个问题的详细解答，帮助你更高效、安全地管理 Python 项目依赖。
+
+1. 如何避免依赖冲突问题？
+依赖冲突是现代软件开发中的常见痛点。以下是一些预防性最佳实践：
+
+✅ 1. 使用虚拟环境隔离项目
+每个项目使用独立的虚拟环境，避免不同项目的依赖互相干扰。
+
+bash
+编辑
+uv venv .venv
+source .venv/bin/activate  # Linux/macOS
+# 或
+.venv\Scripts\activate     # Windows
+✅ 2. 明确版本约束（但不过于严格）
+在 pyproject.toml 中合理设置版本范围：
+
+toml
+编辑
+[project.dependencies]
+django = ">=4.2, <5.0"    # 允许小版本更新，但不跨大版本
+requests = "^2.28.0"      # 等价于 >=2.28.0, <3.0.0（语义化版本）
+black = "==23.7.0"        # 团队开发时可锁定精确版本
+📌 推荐使用 ^ 和 ~ 进行版本控制（TOML 支持）。
+
+✅ 3. 定期更新依赖
+使用工具定期检查过时包，及时升级以减少长期积累的冲突风险：
+
+bash
+编辑
+uv pip list --outdated
+uv pip install --upgrade package-name
+✅ 4. 使用依赖解析器（如 uv 自带）
+uv 使用 Rust 编写的高性能依赖解析器，能更快、更准确地解决复杂依赖关系，比传统 pip 更可靠。
+
+✅ 5. 锁定依赖（生成 uv.lock 文件）
+虽然 uv 默认不生成锁文件，但你可以显式创建以确保可重复构建：
+
+bash
+编辑
+uv lock
+uv sync  # 基于锁文件安装
+这能确保所有开发者和生产环境使用完全相同的依赖版本。
+
+✅ 6. 避免全局安装包
+永远不要用 pip install -g 或直接操作系统 Python，始终使用虚拟环境。
+
+2. 有哪些工具可以检测依赖冲突？
+工具	功能	安装/使用方式
+🔹 uv pip check	检查已安装包之间的兼容性	uv pip check
+🔹 pip-check	交互式查看哪些包有冲突或可更新	pip install pip-check && pip-check
+🔹 pipdeptree	显示依赖树，直观发现冲突来源	
+bash
+编辑
+uv pip install pipdeptree
+pipdeptree --warn conflict
+``` |
+| 🔹 `pip-audit` | 检测依赖中的安全漏洞（间接帮助避免问题包） |  
+```bash
+uv pip install pip-audit
+pip-audit
+``` |
+| 🔹 `dependabot` / `renovate` | GitHub 集成工具，自动检测过时和冲突依赖 | 配置 `.github/dependabot.yml` |
+| 🔹 `poetry check` | 如果你用 Poetry，它提供 `poetry check` 检查 `pyproject.toml` 合法性 | `poetry check` |
+
+📌 示例：使用 `pipdeptree` 查看冲突
+```bash
+pipdeptree --warn conflict
+# 输出示例：
+# Warning: django [required: ==4.0, installed: 4.2] 
+#   requests [required: >=2.20, installed: 2.25]
+3. 如何在项目中管理多个虚拟环境？
+虽然一个项目通常只需一个虚拟环境，但在某些场景下可能需要多个环境（如测试不同 Python 版本、不同依赖组合）。
+
+✅ 场景 1：为不同目的创建多个环境（推荐结构）
+bash
+编辑
+# 开发环境
+uv venv .venv-dev
+# 生产模拟环境
+uv venv .venv-prod
+# 测试环境（Python 3.9）
+uv venv .venv-test-py39 --python python3.9
+激活对应环境：
+
+bash
+编辑
+source .venv-dev/bin/activate
+# 或
+source .venv-prod/bin/activate
+✅ 场景 2：使用 uv 管理多版本 Python 环境
+uv 支持指定不同 Python 版本创建环境：
+
+bash
+编辑
+uv venv .venv-py310 --python python3.10
+uv venv .venv-py311 --python python3.11
+✅ 场景 3：结合 direnv 或 just 实现自动化切换
+direnv：根据目录自动激活对应 .venv
+bash
+编辑
+# .envrc
+source .venv-dev/bin/activate
+安装 direnv 后，进入目录自动激活。
+just：定义常用命令别名
+justfile
+编辑
+dev:
+  source .venv-dev/bin/activate && python app.py
+
+test:
+  source .venv-test/bin/activate && pytest
+使用：just dev
+✅ 场景 4：CI/CD 中使用多个环境测试
+在 GitHub Actions 中测试多个环境：
+
+yaml
+编辑
+jobs:
+  test:
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/uv-actions/setup-uv@v3
+      - run: uv venv --python ${{ matrix.python-version }}
+      - run: uv pip install -e .
+      - run: uv pip install pytest
+      - run: uv run pytest
+✅ 总结：依赖管理最佳实践清单
+目标	推荐做法
+❌ 避免冲突	使用虚拟环境 + 合理版本约束 + 定期更新
+🔍 检测冲突	uv pip check, pipdeptree, pip-audit
+🔄 管理多环境	不同用途用不同 .venv-*，配合 just 或 CI 脚本
+🧱 可重复构建	使用 uv lock 生成锁文件
+🚀 提高效率	用 uv 替代 pip，享受极速安装
+💡 一句话建议：
+
+“一项目一环境，一依赖一声明，常检查，早锁定。”
+
+这样可以最大程度避免依赖地狱，提升开发体验和部署稳定性。
+
+代码
+如何选择合适的虚拟环境隔离方案？
+有哪些工具可以修复依赖冲突？
+如何设置自动更新依赖的频率？
+
+
+
+
+
+
+
+
+
+如何选择合适的虚拟环境隔离方案？
+有哪些工具可以修复依赖冲突？
+如何设置自动更新依赖的频率？
+以下是针对你提出的三个高级依赖管理问题的详细解答，帮助你在实际项目中更高效、安全地进行 Python 环境与依赖管理。
+
+1. 如何选择合适的虚拟环境隔离方案？
+选择哪种隔离方案取决于你的项目规模、团队协作方式和部署需求。以下是常见方案对比与选型建议：
+
+隔离方案	适用场景	工具示例	优点	缺点
+🔹 uv venv / python -m venv
+（目录级隔离）	单个项目开发、学习用途	uv venv .venv	轻量、标准、无需额外工具	多项目时需手动管理路径
+🔹 pipenv
+（Pipfile + virtualenv）	小型项目、希望整合 pip 和 virtualenv	pipenv install django	自动管理 Pipfile 和环境	性能较慢，社区活跃度下降
+🔹 poetry
+（pyproject.toml + 虚拟环境）	中大型项目、需要打包发布	poetry add django	依赖解析强、支持锁定、可发布包	学习曲线稍高
+🔹 conda / mamba
+（跨语言环境管理）	数据科学、机器学习、非 Python 依赖	conda create -n myenv python=3.11	支持非 Python 包（如 C/C++ 库）、跨平台	环境较大，Python 生态兼容性略差
+🔹 Docker 容器
+（完全隔离）	生产部署、CI/CD、多服务架构	Dockerfile + docker run	环境完全一致、可移植性强	启动开销大、需要容器知识
+🔹 .env + direnv
+（自动激活）	开发者频繁切换项目	echo "source .venv/bin/activate" > .envrc && direnv allow	进入目录自动激活环境	需要安装 direnv
+✅ 选型建议：
+🟢 个人项目 / 快速原型：使用 uv venv .venv + 手动激活。
+🟡 团队项目 / 长期维护：推荐 uv 或 poetry，结合 pyproject.toml 和锁文件。
+🔵 数据科学 / 科研项目：使用 conda 或 mamba，便于管理 NumPy、CUDA 等复杂依赖。
+🔴 生产部署 / 微服务：使用 Docker，确保开发、测试、生产环境一致。
+📌 现代趋势：
+
+uv + pyproject.toml 正在成为新的事实标准，因其极速安装、标准兼容、轻量高效。
+
+2. 有哪些工具可以修复依赖冲突？
+依赖冲突无法完全避免，但以下工具可以帮助你诊断并自动或半自动修复。
+
+工具	功能	使用方式	是否能自动修复
+🔧 uv 内置解析器	使用先进算法尝试满足所有约束	uv add package-a package-b	✅ 是（自动回溯求解）
+🔧 pip-tools
+（pip-compile + pip-sync）	从 requirements.in 生成无冲突的 requirements.txt		
+bash
+编辑
+pip install pip-tools
+echo "django" > requirements.in
+pip-compile
+pip-sync
+``` | ✅ 是（通过锁定版本解决） |
+| 🔧 **`poetry`** | 强大的 SAT 求解器，能处理复杂依赖 | `poetry add django` | ✅ 是（失败时提示冲突） |
+| 🔧 **`conda`** | 跨语言依赖解析器，适合科学计算栈 | `conda install numpy pandas` | ✅ 是（但优先使用 conda 包） |
+| 🔧 **`pip check` / `uv pip check`** | 仅检测，不修复 | `uv pip check` | ❌ 否（只报告） |
+| 🔧 **`pip-upgrade`** | 尝试升级冲突包到兼容版本 | `pip install pip-upgrade && pip-upgrade .` | ⚠️ 半自动（需确认） |
+
+#### ✅ **典型修复流程（使用 `pip-tools`）**
+
+```bash
+# 1. 定义高层依赖（不指定版本）
+echo "django" > requirements.in
+echo "djangorestframework" >> requirements.in
+
+# 2. 生成锁定文件（自动解决冲突）
+pip-compile requirements.in
+
+# 3. 安装精确版本
+pip-sync requirements.txt
+💡 原理：pip-compile 会递归解析所有依赖，并选择一组能共存的版本。
+
+✅ 使用 uv 的“重试”策略
+如果 uv add 失败，可以尝试：
+
+bash
+编辑
+# 清除缓存后重试
+uv clean
+uv add django
+
+# 或尝试更新已安装包
+uv pip install --upgrade existing-package
+uv add new-package
+3. 如何设置自动更新依赖的频率？
+定期更新依赖有助于获取安全补丁和新功能，但也可能引入破坏性变更。因此需平衡安全性与稳定性。
+
+✅ 方法一：使用 GitHub Dependabot（推荐）
+在 .github/dependabot.yml 中配置自动更新：
+
+yaml
+编辑
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"        # 每周检查一次
+      # interval: "daily"      # 每天（激进）
+      # interval: "monthly"    # 每月（保守）
+    open-pull-requests-limit: 10
+    # 只更新 dev 依赖
+    # target-branch: "dev"
+    # ignore:
+    #   - dependency-name: "django"
+    #     versions: ["5.x"]     # 忽略 Django 5.x
+✅ 优点：
+
+自动创建 PR
+显示 changelog 和安全漏洞
+可配置更新频率和忽略规则
+✅ 方法二：使用 Renovate Bot
+Renovate 更灵活，支持更多语言和配置：
+
+json
+编辑
+{
+  "extends": ["config:base"],
+  "schedule": ["before 2am on Monday"],
+  "packageRules": [
+    {
+      "depTypeList": ["devDependencies"],
+      "automerge": true
+    },
+    {
+      "updateTypes": ["patch", "minor"],
+      "automerge": true
+    }
+  ]
+}
+✅ 方法三：本地脚本 + Cron（自动化检查）
+创建一个检查脚本 check-updates.py：
+
+python
+编辑
+import subprocess
+import sys
+
+def check_outdated():
+    result = subprocess.run(
+        ["uv", "pip", "list", "--outdated"],
+        capture_output=True,
+        text=True
+    )
+    if result.stdout.strip():
+        print("⚠️ 以下包可更新：")
+        print(result.stdout)
+        sys.exit(1)  # 触发 CI 告警
+    else:
+        print("✅ 所有依赖均为最新")
+
+if __name__ == "__main__":
+    check_outdated()
+然后在 CI（如 GitHub Actions）中每周运行：
+
+yaml
+编辑
+on:
+  schedule:
+    - cron: '0 0 * * 1'   # 每周一凌晨执行
+jobs:
+  check-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/uv-actions/setup-uv@v3
+      - run: python check-updates.py
+✅ 总结：最佳实践建议
+目标	推荐方案
+环境隔离	小项目用 uv venv，大项目用 poetry 或 Docker
+修复冲突	优先使用 uv 或 pip-tools 自动生成兼容依赖集
+自动更新	使用 Dependabot 设置 每周更新，关键项目设为每月
+📌 黄金法则：
+
+开发阶段：每周自动检查更新，小版本自动合并。
+生产项目：每月人工审查更新，重大版本单独测试。
+安全漏洞：立即响应，使用 pip-audit + Dependabot 实现自动化告警。
+这样既能保持项目现代化，又能最大限度避免“依赖地震”。
+
+```
+
+
+
+# 搭建项目
+
+django-admin startproject mysite
+
+配置
+1.DATABASES
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',  # 使用 PostgreSQL 引擎
+        'NAME': 'app',                              # 数据库名称
+        'USER': 'admin',                            # 数据库用户名
+        'PASSWORD': 'admin',                        # 用户密码
+        'HOST': '192.168.1.8',                      # 主机地址，本地可用 'localhost' 或 '127.0.0.1'
+        'PORT': '54321',                            # 端口号，默认为 5432
+        'OPTIONS': {
+            'connect_timeout': 10,                  # 连接超时时间（秒）
+            'sslmode': 'prefer',                    # SSL 模式（可选）
+        },
+        'ATOMIC_REQUESTS': False,                   # 是否将每个视图包裹在事务中（按需开启）
+        'AUTOCOMMIT': True,                         # Django 默认启用自动提交
+    }
+}
+```
+
+2.数据库驱动
+pip install psycopg[binary]
+
+安全建议：使用环境变量（生产环境必备）
+使用django-environ 或 python-decouple
+pip install django-environ
+创建.env  (在项目目录下不是根目录下)
+```
+# .env
+DATABASE_URL=postgres://admin:admin@192.168.1.8:54321/app
+DEBUG=True
+```
+
+修改settings.py
+```python
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
+
+DATABASES = {
+    'default': env.db(),  # 自动解析 DATABASE_URL
+}
+
+DEBUG = env.bool('DEBUG', default=False)
+```
+
+测试数据库连接
+python manage.py dbshell
+如果成功就进入pg命令行
+
+或者检查迁移状态
+python manage.py showmigrations
+
+进入容器中的pg
+podman exec -it postgres psql -U admin -d app
+
+
+
+数据库迁移
+python manage.py makemigrations
+python manage.py migrate
+
+
+最小化启动
+mysite/mysite/settings.py
+```python
+INSTALLED_APPS = [
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+]
+
+MIDDLEWARE = []
+```
+mysite/mysite/urls.py
+```python
+from django.urls import path
+urlpatterns = []
+```
+
+python manage.py runserver 0.0.0.0:8084
+
+settings.py
+```python
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['192.168.1.8']
+```
+
+告诉django以特定IP端口和配置文件运行程序：
+python manage.py runserver 192.168.1.8:8083 --settings=mysite.settings
+
+./core/management/__init__.py:372:        parser.add_argument("--settings")
+
+
+创建应用
+python manage.py startapp blog
+
+cp mysite/urls.py blog/
+```python
+from django.urls import path
+from views import Xxx
+
+urlpatterns = [
+    path('/',Xxx.as_view())
+]
+```
+
+设置主键primary_key=True
+
+定义模型类
+```python
+from django.db import models
+
+class Post(models.Model):
+    title=models.CharField(max_length=250)
+    slug=models.SlugField(max_length=250)
+    body=models.TextField()
+
+    def __str__(self):#用来打印对象的属性
+        return f"{self.__class__.__name__}({self.title})"
+
+```        
+
+
+注册应用
+```python
+INSTALLED_APPS = [
+    'blog.apps.BlogConfig',#BlogConfig是应用配置类，注册后django知道如何加载模型类
+]
+```
+
+
+
+# 后台管理
+前后端分离开发用不到
+
+创建管理员：python manage.py createsuperuser  #加到auth_user表中
+
+了解即可
+```python
+#admin.py
+from django.contrib import admin
+from .models import Post
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display=['title','slug','author','publish','status']
+    list_filter=['status','created','publish','author']#按哪些字段过滤
+    search_fields=['title','body']#在哪里搜索，可以是['title']
+    prepopulated_fields={'slug':('title',)}#自动填充，依赖指定字段自动填充slug，可以是{'slug':("title", "category")}
+    raw_id_fields=['author']#用一个输入框代替下拉选择框，让你通过输入主键（ID）来指定关联对象，而不是加载全部对象(比如100k+)的下拉列表，可以写成: raw_id_fields = ("author", "category", "tags")
+    date_hierarchy='publish'#日期层级导航栏，允许按照 年 → 月 → 日 逐级筛选数据  管理后台为模型添加基于日期的导航层级（时间轴），让用户可以按年、月、日逐级筛选数据
+    ordering=['status','-publish']
+    show_facets=admin.ShowFacets.ALWAYS#总显示分类统计facets
+    
+
+# admin.site.register(Post)#往管理站点注册模型类，与装饰器写法二选一，即也可以写成@admin.register(Post)
+```
+
+
+模型类
+```python
+from django.db import models
+from django.utils import timezone
+from django.db.models.functions import Now
+from django.conf import settings
+from utils.db import schema_table
+
+
+class BaseModel(models.Model):
+    # created=models.DateTimeField(auto_now_add=True,default=timezone.now)#第一次添加记录的时间（只能添加一次add）
+    created=models.DateTimeField(editable=False,default=timezone.now)#第一次添加记录的时间（只能添加一次add）
+    updated=models.DateTimeField(auto_now=True)#当前更新的时间（更新多次）
+    deleted=models.DateTimeField(default=None,null=True,blank=True)
+
+    class Meta:
+        abstract=True#抽象基类，不生成表
+
+class Post(BaseModel):
+    class Status(models.TextChoices):
+        # name=value,label
+        DRAFT='DF','Draft'  # 枚举名字=枚举值,可读字符串，通过Post.Status.values获取选项的值
+        PUBLISHED='PB','Published'
+        
+    title=models.CharField(max_length=250)
+    slug=models.SlugField(max_length=250)
+    body=models.TextField()
+    # publish=models.DateTimeField(default=timezone.now)#根据是否配置时区USE_TZ而定是否带时区
+    # 实现代码：datetime.now(tz=timezone.utc if settings.USE_TZ else None)
+    publish=models.DateTimeField(db_default=Now())#db_default使用数据库函数返回数值，对于pg来说就是select STATEMENT_TIMESTAMP()，对于mysql来说就是select CURRENT_TIMESTAMP(6)
+    status=models.CharField(max_length=2,choices=Status,default=Status.DRAFT)
+    author=models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # global_settings.py中AUTH_USER_MODEL = "auth.User"
+        on_delete=models.CASCADE,
+        related_name='blog_posts'  # 从关联模型反向访问当前模型时所使用的属性名，外键默认自动创建反向关系，默认反向关系名字：小写模型名_set，如user.post_set
+    )
+    
+    class Meta:
+        # db_tablespace='mysite'  #表空间，物理隔离，schema则是逻辑隔离，相当于名字空间，一般不同项目或租户用schema
+        db_table=schema_table('posts')
+        ordering=['-publish']#最先添加的放在最上面
+        indexes=[
+            models.Index(fields=['-publish']),#添加索引
+        ]
+    
+    def __str__(self):#用来打印对象的属性
+        return f"{self.__class__.__name__}({self.title})"
+
+```        
+from django.contrib.auth.models import User
+from blog.models import Post
+user=User.objects.get(username='admin')#没有就抛 DoesNotExist 异常，有多个就抛 MultipleObjectsReturned 异常
+post=Post(title='Another post',slug='another-post',body='Post body.',author=user)#这里author=user表示往数据表posts中写入author_id是auth_user表的id  这时仍然在内存中
+post.save()#只有save()才落盘
+
+Post.objects.create(title='One more post',slug='one-more-post',body='Post body.',author=user)#使用create()则将在内存中创建对象和落盘两个动作合二为一
+user,created=User.objects.get_or_create(username='user2')#先查询找不到才添加
+post.title='New title'
+post.save()
+
+
+模型类管理器objects
+all_posts=Post.objects.all()
+posts=Post.objects.filter(title='New title')
+print(posts.query)#打印sql
+
+查询过滤器
+Post.objects.filter(title__iexact='New title')#大小写不敏感insensitive
+
+#sql为：SELECT "mysite"."posts"."author_id" FROM "mysite"."posts" 
+#WHERE "mysite"."posts"."title"::text LIKE %new% ORDER BY "mysite"."posts"."publish" DESC
+Post.objects.filter(title__contains='New')
+
+Post.objects.filter(title__icontains='new')
+Post.objects.filter(id__in=[1,3])#翻译成 where id in (1,3)
+Post.objects.filter(id__gt=3)#翻译成：id>3
+Post.objects.filter(id__gte=3)
+Post.objects.filter(id__lt=3)
+Post.objects.filter(title__istartswith='new')#翻译：where upper(title::text) like upper(new%)
+from datetime import date
+Post.objects.filter(publish__date=date(2025,10,28))#翻译： WHERE ("mysite"."posts"."publish" AT TIME ZONE UTC)::date = 2025-10-28
+Post.objects.filter(publish__year=2025)
+Post.objects.filter(publish__month=9)#翻译： WHERE EXTRACT(MONTH FROM "mysite"."posts"."publish" AT TIME ZONE UTC) = 10
+Post.objects.filter(publish__day=29)
+Post.objects.filter(publish__date__gt=date(2025,10,28))#翻译：WHERE ("mysite"."posts"."publish" AT TIME ZONE UTC)::date > 2025-10-28
+Post.objects.filter(author__username='admin')
+
+#翻译：FROM "mysite"."posts" INNER JOIN "auth_user" ON ("mysite"."posts"."author_id" = "auth_user"."id") 
+#WHERE "auth_user"."username"::text LIKE ad%
+
+#FROM "mysite"."posts" INNER JOIN "auth_user" ON ("mysite"."posts"."author_id" = "auth_user"."id")    关联查询
+#WHERE ("auth_user"."username"::text LIKE ad% AND "mysite"."posts"."publish" BETWEEN 2025-01-01 00:00:00+00:00 AND 2025-12-31 23:59:59.999999+00:00)
+Post.objects.filter(author__username__startswith='ad',publish__year=2025)
+#还可以写成链式调用形式
+Post.objects.filter(author__username__startswith='ad').filter(publish__year=2025)
+Post.objects.filter(publish__year=2025).exclude(title__startswith='New')#关键点：NOT ...::text LIKE New%
+Post.objects.order_by('author','-publish','-title')  # ORDER BY
+Post.objects.all()[:3]
+Post.objects.all()[1:3]#要点：LIMIT 2 OFFSET 1，取的是第1、2两条
+Post.objects.filter(id__lt=3).count()#count()是对前面的QuerySet对象取len()得到的，所以要放在链式调用的最后
+Post.objects.filter(title__startswith='初识').exists()
+post=Post.objects.get(id=10)
+post.delete()#注意：删除时外键设置了on_delete=CASCADE也会联动删除
+
+from django.db.models import Q
+starts_who=Q(title__istartswith='who')#Q用来构造条件
+starts_why=Q(title__istartswith='why')
+Post.objects.filter(starts_who|starts_why)#关键点：where 条件1 or 条件2
+
+何时真正执行查询？
+- 遍历迭代
+- 切片
+- 缓存pickle/cache
+- repr() - 对应于打印qs对象,len() - 对应于count()
+- list()
+- bool(),or,and,if - 对应于exists()
+
+
+创建模型管理器
+- 1.添加管理器方法到现存管理器objects上: Post.objects.my_manager()
+- 2.创建一个新的管理器: Post.my_manager.all()
+
+from blog.models import Post
+posts=Post.published.filter(title__startswith='初识')
+
+```python
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super().get_queryset().filter(status=Post.Status.PUBLISHED)
+        )
+        
+class Post(BaseModel):
+    objects=models.Manager()#默认管理器
+    published=PublishedManager()#自定义管理器
+```        
+
+
+### path converter
+<int:id>  用于路径参数
+
+
+路由配置
+总路由
+```python
+from django.urls import path,include
+
+urlpatterns = [
+    path('/blog',include('blog.urls'),namespace='blog')
+]
+```
+子路由
+```python
+from django.urls import path
+from . import views
+
+app_name='blog'
+
+urlpatterns = [
+    path('',views.post_list,name='post_list'),
+    path('<int:id>/',views.post_detail,name='post_detail'),
+]
+```
+
+
+说明：
+指定迁移特定应用：python manage.py makemigrations blog
+执行迁移：python manage.py migrate
+查看迁移计划(执行的sql迁移前检查是否错误)：python manage.py sqlmigrate blog 0001
+按照指定配置IP端口启服务：python manage.py runserver 0.0.0.0:8081 --settings=mysite.settings
+运行django shell用于检查结果集测试性能:python manage.py shell 
+创建管理员：python manage.py createsuperuser
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
