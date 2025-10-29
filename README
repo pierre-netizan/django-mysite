@@ -1032,8 +1032,25 @@ urlpatterns = [
 创建管理员：python manage.py createsuperuser
 
 
+数据迁移不一定是数据库变化，有时模型类改变也要迁移，即数据迁移首先是保证与模型类一致
 
 
+分页逻辑
+- previous_page_number
+- next_page_number
+- number
+- paginator.num_pages：页码超限返回最后一页
+- has_previous
+- has_next
+
+
+模板继承：{% extends "x/y.html" %}
+块：{% block 字段名 %}{% endblock %}
+循环：{% for i in data %}有数据{% empty %}没有数据{% endfor %}
+条件：{% if 条件 %}{% else %}{% endif %}
+模板变量：{{ x.a }}
+导入模板：{% include "x.html" with x=x1 y=y1 %}
+过滤器：{{ x.a|truncatewords:n|linebreaks }}
 
 
 

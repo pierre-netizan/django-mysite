@@ -1,15 +1,88 @@
 from django.shortcuts import render,get_object_or_404
 from django.http import Http404, HttpRequest, HttpResponse
+from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
+
 from .models import Post
 
 
 def post_list(request:HttpRequest)->HttpResponse:
-    posts=Post.published.all()
+    post_list=Post.published.all()#全部数据
+    # Pagination with 3 posts per page
+    paginator=Paginator(post_list,2)#分页器对象
+    page_number=request.GET.get('page',1)#request.GET类似于字典
+    # posts=paginator.page(page_number)#一页数据
+    print(page_number)
+    
+    try:
+        page = paginator.page(page_number)
+        print(">>>>>>>>>>>>>>>>",page)
+    except PageNotAnInteger:
+        # 如果页面不是一个整数，返回第一页
+        page = paginator.page(1)
+    except EmptyPage:
+        # 如果页面超出范围（例如9999），返回最后一页
+        print('---------------------1')
+        page = paginator.page(paginator.num_pages)
+    
+    # 计算自定义页码范围
+    custom_page_range = get_custom_page_range(page, paginator.num_pages, 2)
+    print(custom_page_range)
+
     return render(
-        request,
-        'blog/post/list.html',
-        {'posts':posts}
+        request, 
+        'blog/post/list.html', 
+        {'page': page, 'custom_page_range': custom_page_range,'posts':page.object_list}
     )
+
+    # return render(
+    #     request,
+    #     'blog/post/list.html',
+    #     {'posts':posts}
+    # )
+
+
+# def post_list(request):
+#     object_list = Post.published.all()  # 或其他 QuerySet
+#     paginator = Paginator(object_list, 5)  # 每页显示 5 篇文章
+#     page_number = request.GET.get('page')
+
+#     try:
+#         page = paginator.page(page_number)
+#     except PageNotAnInteger:
+#         # 如果页面不是一个整数，返回第一页
+#         page = paginator.page(1)
+#     except EmptyPage:
+#         # 如果页面超出范围（例如9999），返回最后一页
+#         page = paginator.page(paginator.num_pages)
+
+#     # 计算自定义页码范围
+#     custom_page_range = get_custom_page_range(page, paginator.num_pages, 2)
+
+#     return render(request, 'blog/post/list.html', {'page': page, 'custom_page_range': custom_page_range})
+
+def get_custom_page_range(page, total_pages, visible_pages=2):
+    current_page = page.number
+    start_page = max(current_page - visible_pages, 1)
+    end_page = min(current_page + visible_pages, total_pages)
+
+    # 添加省略号
+    custom_page_range = []
+    if start_page > 1:
+        custom_page_range.append(1)
+        if start_page > 2:
+            custom_page_range.append('...')
+
+    for i in range(start_page, end_page + 1):
+        custom_page_range.append(i)
+
+    if end_page < total_pages:
+        if end_page < total_pages - 1:
+            custom_page_range.append('...')
+        custom_page_range.append(total_pages)
+
+    return custom_page_range
+
+
 
 
 # def post_detail(request,id):
@@ -24,11 +97,15 @@ def post_list(request:HttpRequest)->HttpResponse:
 #     )
 
 
-def post_detail(request:HttpRequest,id:int)->HttpResponse:
+def post_detail(request:HttpRequest,year:int,month:int,day:int,post:str)->HttpResponse:
     post=get_object_or_404(
         Post,
-        id=id,
-        status=Post.Status.PUBLISHED
+        status=Post.Status.PUBLISHED,
+        slug=post,
+        publish__year=year,
+        publish__month=month,
+        publish__day=day,
+        
     )
     return render(
         request,
