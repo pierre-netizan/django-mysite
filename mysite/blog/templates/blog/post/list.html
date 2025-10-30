@@ -18,5 +18,6 @@
     {% empty %}
         <p>暂无文章</p>
     {% endfor %}
-    {% include "pagination.html" with page=page custom_page_range=custom_page_range %}
+    {#   {% include "pagination.html" with page=page custom_page_range=custom_page_range %} #}
+    {% include "pagination.html" with page=page_obj %}
 {% endblock %}

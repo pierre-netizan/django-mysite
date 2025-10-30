@@ -1056,16 +1056,22 @@ urlpatterns = [
 
 
 
+### 表单
+校验用is_valid()
+- 1.全部字段都通过校验则通过校验，校验后数据form.cleaned_data
+- 2.只要一项没通过校验则不通过校验，报错信息在form.errors中
 
 
 
 
 
 
+{{ form.as_p }}:  把表单的每一项渲染成p元素，其它还有as_ul, as_table
+{% csrf_token %}: csrf防护，原理：与生成的叫csrfmiddlewaretoken的token进行比较，一致就放行否则拦截，POST请求都检查csrf
+{% with comments.count as total_comments %}{% endwith %}: 定义作用域和内部变量，函数调用不需要括号，with好处是减少对数据库的访问（缓存/懒加载？）
+{{form.x.as_field_group}}: 用来简化django5之前繁杂的表单编写，如field,field.errors,field.label_tag,field.help_text等编写可以用as_field_group来代替而且也不需要写for循环了
 
-
-
-
+django中处理邮件收发可用django-anymail
 
 
 

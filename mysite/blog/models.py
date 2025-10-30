@@ -71,7 +71,26 @@ class Post(BaseModel):
         )
 
 
-
+class Comment(BaseModel):
+    post=models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments'#反向关系，通过某个post.comments取得所有评论，不定义related_name则通过comment_set来获取所有评论
+    )
+    name=models.CharField(max_length=80)
+    email=models.EmailField()
+    body=models.TextField()
+    is_active=models.BooleanField(default=True)
+    
+    class Meta:
+        db_table=schema_table('comments')
+        ordering=['-created']
+        indexes=[
+            models.Index(fields=['created'])
+        ]
+    
+    def __str__(self):
+        return f"Comment by {self.name} on {self.post}"
 
 
 

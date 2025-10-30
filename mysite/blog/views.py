@@ -1,10 +1,73 @@
 from django.shortcuts import render,get_object_or_404
 from django.http import Http404, HttpRequest, HttpResponse
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
+from django.views.generic import ListView
+from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
+
 
 from .models import Post
+from .forms import EmailPostForm,CommentForm
+
+def post_share(request,post_id)->HttpResponse:
+    # 通过id获取文章
+    post=get_object_or_404(
+        Post,
+        id=post_id,
+        status=Post.Status.PUBLISHED
+    )
+    sent=False
+    
+    if request.method=='POST':
+        # 提交表单
+        form=EmailPostForm(request.POST)
+        if form.is_valid():#有一项没通过校验则报错，报错信息在form.errors中
+            # 表单字段通过校验返回的是cleaned_data
+            cd=form.cleaned_data
+            print(f"{cd=}")
+            #发送邮件
+            post_url = request.build_absolute_uri(
+                post.get_absolute_url()
+            )
+            subject = (
+                f"{cd['name']} ({cd['email']}) "
+                f"recommends you read {post.title}"
+            )
+            message = (
+                f"Read {post.title} at {post_url}\n\n"
+                f"{cd['name']}'s comments: {cd['comments']}"
+            )
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=None,
+                recipient_list=[cd['to']],
+            )
+            sent = True
+    else:
+        form=EmailPostForm()
+    return render(
+        request,
+        'blog/post/share.html',
+        {
+            'post':post,
+            'form':form,
+            'sent':sent
+        }
+    )
 
 
+class PostListView(ListView):
+    """
+    Alternative post list view
+    """
+    queryset=Post.published.all()
+    context_object_name='posts'
+    paginate_by=2
+    template_name='blog/post/list.html'
+    
+    
+    
 def post_list(request:HttpRequest)->HttpResponse:
     post_list=Post.published.all()#全部数据
     # Pagination with 3 posts per page
@@ -15,23 +78,20 @@ def post_list(request:HttpRequest)->HttpResponse:
     
     try:
         page = paginator.page(page_number)
-        print(">>>>>>>>>>>>>>>>",page)
     except PageNotAnInteger:
         # 如果页面不是一个整数，返回第一页
         page = paginator.page(1)
     except EmptyPage:
         # 如果页面超出范围（例如9999），返回最后一页
-        print('---------------------1')
         page = paginator.page(paginator.num_pages)
     
     # 计算自定义页码范围
     custom_page_range = get_custom_page_range(page, paginator.num_pages, 2)
-    print(custom_page_range)
 
     return render(
         request, 
         'blog/post/list.html', 
-        {'page': page, 'custom_page_range': custom_page_range,'posts':page.object_list}
+        {'page': page, 'custom_page_range': custom_page_range,'posts':page.object_list}#object_list是django固定的
     )
 
     # return render(
@@ -105,12 +165,18 @@ def post_detail(request:HttpRequest,year:int,month:int,day:int,post:str)->HttpRe
         publish__year=year,
         publish__month=month,
         publish__day=day,
-        
     )
+    comments=post.comments.filter(is_active=True)
+    form=CommentForm()
+    
     return render(
         request,
         'blog/post/detail.html',
-        {'post':post}
+        {
+            'post':post,
+            'comments':comments,
+            'form':form,
+        }
     )
 
 """
@@ -154,7 +220,28 @@ async def aget_object_or_404(klass, *args, **kwargs):
 """
 
 
-
+@require_POST
+def post_comment(request,post_id)->HttpResponse:
+    post=get_object_or_404(
+        Post,
+        id=post_id,
+        status=Post.Status.PUBLISHED
+    )
+    comment=None
+    form=CommentForm(data=request.POST)
+    if form.is_valid():
+        comment=form.save(commit=False)#不提交是为了增加指定的评论
+        comment.post=post
+        comment.save()#增加评论之后才提交，落盘
+    return render(
+        request,
+        'blog/post/comment.html',
+        {
+            'post':post,
+            'form':form,
+            'comment':comment
+        }
+    )
 
 
 
