@@ -1079,6 +1079,19 @@ django中处理邮件收发可用django-anymail
 
 
 
+扩展博客应用
+uv pip install django-taggit
+注册taggit
+模型类中增加字段：tags=TaggableManager()
+数据迁移(只要表字段改变必做makemigrations+migrate)，表字段不变只做makemigrations不做migrate
+增加tag
+python manage.py shell
+from blog.models import Post
+post=Post.objects.get(id=1)
+#tags就是django-taggit定义的管理器
+post.tags.add('music','jazz','django')
+post.tags.all()
+post.tags.remove('django')
 
 
 
@@ -1088,6 +1101,40 @@ django中处理邮件收发可用django-anymail
 
 
 
+## 自定义模板标签
+
+```python
+from django import template
+register=template.Library()
+@register.inclusion_tag('blog/post/latest_posts.html')
+def show_latest_posts(count=5):
+    latest_posts=Post.published.order_by('-publish')[:count]
+    return {'latest_posts':latest_posts}
+
+@register.simple_tag
+def get_most_commented_posts(count=5):
+    return Post.published.annotate(
+        total_comments=Count('comments')
+    ).order_by('-total_comments')[:count]
+```    
+
+使用
+```html
+{# 通过as把函数执行结果保存成变量 #}
+{% get_most_commented_posts as most_commented_posts %}
+<ul>
+    {% for post in most_commented_posts %}
+        <li>
+            <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        </li>
+    {% endfor %}
+</ul>
+```
+
+
+安装markdown
+uv pip install pygments
+uv pip install markdown
 
 
 
@@ -1095,36 +1142,146 @@ django中处理邮件收发可用django-anymail
 
 
 
+Fluent Reader删除错误的网址
+%APPDATA%\fluent-reader\，删除Databases目录，重启
 
 
 
 
 
+# 数据迁移
+docker pull postgres:16.2
+docker run --name=blog_db -e POSTGRES_DB=blog -e POSTGRES_USER=blog -e POSTGRES_PASSWORD=xxx -p 54321:5432 -d postgres:16.2
+
+用docker桌面版管理更方便
+
+python -m pip install psycopg==3.1.18
+python -m pip install python-decouple  # uv add python-decouple 或 python-dotenv
+
+## 1.导出数据
+
+python -Xutf8 manage.py dumpdata --indent=2 --output=mysite_data.json  #只有json,yaml,xml几种格式，编码utf8
+
+## 2.更改数据库配置
+DATABASES={
+    'default':{
+        'ENGINE':'django.db.backends.postgresql',
+        'NAME':config('DB_NAME'),
+        'USER':config('DB_USER'),
+        'PASSWORD':config('DB_PASSWORD'),
+        'HOST':config('DB_HOST')
+    }
+}
+
+## 3.更改环境变量
+DB_NAME=blog
+USER=blog
+PASSWORD=xxx
+HOST=192.168.1.8
+
+
+## 4.迁移 (创建了表格，没有转储数据)
+python manage.py migrate
+
+## 5.转储数据
+python manage.py loaddata mysite_data.json
+
+
+获取外网IP
+```python
+import requests
+
+def get_public_ip():
+    try:
+        # 使用免费的公共 API
+        response = requests.get('https://api.ipify.org', params={'format': 'text'}, timeout=5)
+        return response.text.strip()
+    except requests.RequestException as e:
+        return f"无法获取IP: {e}"
+
+# 调用函数
+public_ip = get_public_ip()
+print(f"本机外网IP: {public_ip}")
+
+#或
+response = requests.get('https://ident.me', timeout=5)
+```
+
+可用的公共 API（任选其一）：
+https://api.ipify.org （最稳定）
+https://ident.me
+https://checkip.amazonaws.com
+https://icanhazip.com
+
+
+如果需要比 python-decouple 和 python-dotenv 更强的功能（如多环境、层级配置、YAML 支持），推荐以下库
+- dynaconf
+- django-environ
+
+**dynaconf**
+pip install dynaconf
+支持 .env、settings.toml、settings.yaml 等
+提供 from dynaconf import settings
+功能非常强大，适合中大型项目
+
+**django-environ**
+专为 Django 设计
+底层使用 python-dotenv
+pip install django-environ
+推荐用于 Django 项目
+
+使用:
+```python
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
+
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env.bool('DEBUG')
+DATABASE_URL = env.db('DATABASE_URL')
+```
+
+
+✅ 总结：流行度排名
+
+|库名|	推荐场景|	流行度|
+|--|--|--|
+|python-dotenv|	✅ 通用项目、Flask、FastAPI	⭐⭐⭐⭐⭐（最流行）|
+|Django-environ|	✅ Django 项目	⭐⭐⭐⭐☆|
+|dynaconf|	✅ 复杂配置需求	⭐⭐⭐☆|
+|python-decouple|	⚠️ 老项目、简单需求	⭐⭐☆（逐渐被替代）|
+
+
+✅ 推荐选择
+
+|你的需求|	推荐库|
+|--|--|
+|想用 .env 文件管理配置|	✅ python-dotenv（首选）|
+|Django 项目|	✅ django-environ|
+|需要 YAML/TOML 配置|	✅ dynaconf|
+|只想要简单类型转换|	⚠️ python-decouple（可，但非主流）|
+
+📌 结论
+python-dotenv 是目前 Python 中最流行、最广泛使用的环境变量管理库
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## 搜索
+```python
+INSTALLED_APPS = [
+    'django.contrib.staticfiles',
+    'django.contrib.postgres',#全文搜索pg原生支持而sqlite3不支持
+    'blog.apps.BlogConfig',
+]
+```
+python manage.py shell
+from blog.models import Post
+Post.objects.filter(title__search='django')#单个字段搜索
+#多个字段搜索
+from django.contrib.postgres.search import SearchVector
+from blog.models import Post
+Post.objects.annotate(search=SearchVector('title','body')).filter(search='django')
 
 
 

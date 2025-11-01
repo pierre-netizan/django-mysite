@@ -5,6 +5,8 @@ from django.conf import settings
 from utils.db import schema_table
 from django.urls import reverse
 
+from taggit.managers import TaggableManager
+
 
 class BaseModel(models.Model):
     # created=models.DateTimeField(auto_now_add=True,default=timezone.now)#第一次添加记录的时间（只能添加一次add）
@@ -47,6 +49,7 @@ class Post(BaseModel):
     
     objects=models.Manager()#默认管理器
     published=PublishedManager()#自定义管理器
+    tags=TaggableManager()
     
     class Meta:
         # db_tablespace='mysite'  #表空间，物理隔离，schema则是逻辑隔离，相当于名字空间，一般不同项目或租户用schema

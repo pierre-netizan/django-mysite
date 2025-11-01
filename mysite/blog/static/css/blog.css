@@ -95,3 +95,12 @@ input[type=submit] {
     font-size:12px;
     color:#666;
 }
+
+ul{
+    list-style:none;
+    /* padding-inline-start:40px; */
+    margin: 0px 0;
+}
+ul li{
+    margin-bottom: 4px;
+}

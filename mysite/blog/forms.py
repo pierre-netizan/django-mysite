@@ -15,3 +15,15 @@ class CommentForm(forms.ModelForm):#校验后数据要落盘所以用ModelForm
     class Meta:
         model=Comment
         fields=['name','email','body']
+
+
+class SearchForm(forms.Form):
+    query=forms.CharField()
+
+
+
+
+
+
+
+

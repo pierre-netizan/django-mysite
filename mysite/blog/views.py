@@ -4,10 +4,14 @@ from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 from django.views.generic import ListView
 from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
+from django.db.models import Count
+from django.contrib.postgres.search import SearchVector
+
+from taggit.models import Tag
 
 
 from .models import Post
-from .forms import EmailPostForm,CommentForm
+from .forms import EmailPostForm,CommentForm, SearchForm
 
 def post_share(request,post_id)->HttpResponse:
     # 通过id获取文章
@@ -68,8 +72,13 @@ class PostListView(ListView):
     
     
     
-def post_list(request:HttpRequest)->HttpResponse:
+def post_list(request:HttpRequest, tag_slug=None)->HttpResponse:
     post_list=Post.published.all()#全部数据
+    tag=None
+    if tag_slug:
+        tag=get_object_or_404(Tag,slug=tag_slug)
+        post_list==post_list.filter(tags__in=[tag])
+        
     # Pagination with 3 posts per page
     paginator=Paginator(post_list,2)#分页器对象
     page_number=request.GET.get('page',1)#request.GET类似于字典
@@ -91,7 +100,12 @@ def post_list(request:HttpRequest)->HttpResponse:
     return render(
         request, 
         'blog/post/list.html', 
-        {'page': page, 'custom_page_range': custom_page_range,'posts':page.object_list}#object_list是django固定的
+        {
+            'page': page, 
+            'custom_page_range': custom_page_range,
+            'posts':page.object_list,  #object_list是django固定的
+            'tag':tag,
+        }
     )
 
     # return render(
@@ -169,6 +183,15 @@ def post_detail(request:HttpRequest,year:int,month:int,day:int,post:str)->HttpRe
     comments=post.comments.filter(is_active=True)
     form=CommentForm()
     
+    # 列出相似文章
+    post_tags_ids=post.tags.values_list('id',flat=True)
+    similar_posts=Post.published.filter(
+        tags__in=post_tags_ids
+    ).exclude(id=post.id)#排除自己，也有那些tags的(可能还有别的tags)，in表示不要求tags完全一样
+    similar_posts=similar_posts.annotate(
+        same_tags=Count('tags')
+    ).order_by('-same_tags','-publish')[:4]#按照tags数量排序
+    
     return render(
         request,
         'blog/post/detail.html',
@@ -176,6 +199,7 @@ def post_detail(request:HttpRequest,year:int,month:int,day:int,post:str)->HttpRe
             'post':post,
             'comments':comments,
             'form':form,
+            'similar_posts':similar_posts
         }
     )
 
@@ -245,5 +269,29 @@ def post_comment(request,post_id)->HttpResponse:
 
 
 
-
+def post_search(request):
+    form=SearchForm()
+    query=None
+    results=[]
+    
+    if 'query' in request.GET:
+        form=SearchForm(request.GET)
+        if form.is_valid():
+            query=form.cleaned_data['query']
+            results=(
+                Post.published.annotate(
+                    search=SearchVector('title','body')
+                )
+                .filter(search=query)
+            )
+            
+    return render(
+        request,
+        'blog/post/search.html',
+        {
+            'form':form,
+            'query':query,
+            'results':results
+        }
+    )
 

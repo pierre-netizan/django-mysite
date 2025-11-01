@@ -34,6 +34,8 @@ DEBUG = env.bool('DEBUG', default=False)
 ALLOWED_HOSTS = ['*']
 # ALLOWED_HOSTS = ['192.168.1.8']
 
+SITE_ID = 1
+
 
 # Application definition
 
@@ -43,7 +45,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',#管理登录会话（Admin必须要）
     'django.contrib.messages',
+    'django.contrib.sites',#RSS
+    'django.contrib.sitemaps',#RSS
     'django.contrib.staticfiles',
+    'django.contrib.postgres',#全文搜索pg原生支持而sqlite3不支持
+    'taggit',#推荐注册顺序：django自带应用>第三方应用>自定义应用
     'blog.apps.BlogConfig',
 ]
 
